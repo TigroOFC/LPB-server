@@ -10,18 +10,24 @@ app.use(bodyParser.text({ type: '*/*' }));
 app.post('/run-lpb', (req, res) => {
     const codigoLPB = req.body;
 
+    // Salva temporariamente o arquivo .lpb
     const tempFile = path.join(__dirname, 'temp.lpb');
     fs.writeFileSync(tempFile, codigoLPB);
 
-    exec(`python LPB_interpretador.py ${tempFile}`, (error, stdout, stderr) => {
+    // Usa python3 no Linux (Railway)
+    exec(`python3 LPB_interpretador.py ${tempFile}`, (error, stdout, stderr) => {
+        // Deleta o arquivo temporário
         fs.unlinkSync(tempFile);
 
         if (error) {
             console.error('Erro ao executar Python:', stderr);
             return res.status(500).send(`Erro ao executar Python:\n${stderr}`);
         }
+
+        console.log('Saída Python:', stdout);
         res.send(stdout);
     });
 });
 
-app.listen(3000, () => console.log('Servidor LPB rodando na porta 3000'));
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Servidor LPB rodando na porta ${PORT}`));
